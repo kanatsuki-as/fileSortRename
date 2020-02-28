@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, protocol, BrowserWindow } from 'electron'
+import { app, protocol, BrowserWindow, Menu, MenuItem } from 'electron'
 import {
   createProtocol
   /* installVueDevtools */
@@ -24,6 +24,25 @@ function createWindow () {
       webSecurity: process.env.NODE_ENV !== 'development'
     }
   })
+
+  const menu = new Menu()
+  menu.append(new MenuItem(
+    {
+      label: 'MenuItem1',
+      type: 'submenu',
+      submenu: [
+        { role: 'minimize' },
+        { role: 'selectAll' },
+        {
+          label: 'MenuItem2',
+          click () { console.log('item 1 clicked') }
+        }
+      ]
+    })
+  )
+  // メニュー追加
+  // TODO: メニュー処理
+  // win.setMenu(menu)
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
