@@ -58,6 +58,7 @@ export default class App extends Vue {
   selectRenamePettern = 'digitFirst'
   isOpen = false
   selectBeforeIndex = -1
+  selectType = 'Select'
 
   mounted () {
     // 作業用パス
@@ -85,38 +86,58 @@ export default class App extends Vue {
   }
 
   selectFiles (evnets) {
+    // 押されたキーの判断
     const event = evnets.event
+    // 選択されたアイテム
     const index = evnets.index
-    if (!this.fileInfoList[index].isSelect) {
-      this.fileInfoList[index].isSelect = true
-      this.fileInfoList[index].color = '#aafdcc'
-      if (event.ctrlKey && event.shiftKey) {
-        if (this.selectBeforeIndex !== -1) {
-          this.selectBeforeIndex = index
-        } else {
-          let min = this.selectBeforeIndex < index ? this.selectBeforeIndex : index
-          const max = this.selectBeforeIndex > index ? this.selectBeforeIndex : index
-          console.log(min)
-          for (min; min < max; min++) {
-            this.fileInfoList[min].isSelect = true
-            this.fileInfoList[min].color = '#aafdcc'
-          }
+
+    // コントロールとシフトキー
+    if (event.ctrlKey && event.shiftKey) {
+      if (this.selectBeforeIndex !== -1) {
+        let min = this.selectBeforeIndex < index ? this.selectBeforeIndex : index
+        const max = this.selectBeforeIndex > index ? this.selectBeforeIndex + 1 : index + 1
+        for (min; min < max; min++) {
+          this.fileInfoList[min].isSelect = this.selectType === 'Select' ? '#aafdcc' : '#FFFFFF'
+          this.fileInfoList[min].color = this.selectType === 'Select' ? '#aafdcc' : '#FFFFFF'
         }
-      } else if (event.ctrlKey) {
+      }
+    // ctrlキー
+    } else if (event.ctrlKey) {
+      // trueかfalseで選択か解除を行う
+      this.fileInfoList[index].isSelect = !this.fileInfoList[index].isSelect
+      this.selectType = this.fileInfoList[index].isSelect ? 'Select' : 'Release'
+      this.fileInfoList[index].color = this.selectType === 'Select' ? '#aafdcc' : '#ffffff'
+      this.selectBeforeIndex = index
+    // シフトキー
+    } else if (event.shiftKey) {
+      // 初回選択はクリックと同じ
+      if (this.selectBeforeIndex === -1) {
+        this.fileInfoList[index].isSelect = true
         this.selectBeforeIndex = index
+      // 初回選択じゃない場合はクリックしたものの間にあるもの全て選択
       } else {
         this.fileInfoList.forEach((item, i) => {
-          if (item.isSelect && i !== index) {
-            item.isSelect = false
-            item.color = '#ffffff'
-          }
+          item.isSelect = false
+          item.color = '#ffffff'
         })
-        this.selectBeforeIndex = index
+        let min = this.selectBeforeIndex < index ? this.selectBeforeIndex : index
+        const max = this.selectBeforeIndex > index ? this.selectBeforeIndex + 1 : index + 1
+        for (min; min < max; min++) {
+          this.fileInfoList[min].isSelect = true
+          this.fileInfoList[min].color = '#aafdcc'
+        }
       }
+    // ただのクリック時
     } else {
-      this.fileInfoList[index].isSelect = false
-      this.fileInfoList[index].color = '#ffffff'
-      this.selectBeforeIndex = -1
+      this.fileInfoList[index].isSelect = true
+      this.fileInfoList[index].color = '#aafdcc'
+      this.fileInfoList.forEach((item, i) => {
+        if (i !== index) {
+          item.isSelect = false
+          item.color = '#ffffff'
+        }
+      })
+      this.selectBeforeIndex = index
     }
   }
 
