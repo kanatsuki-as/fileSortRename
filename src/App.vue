@@ -91,9 +91,11 @@ export default class App extends Vue {
       this.fileInfoList[index].isSelect = true
       this.fileInfoList[index].color = '#aafdcc'
       if (event.ctrlKey && event.shiftKey) {
-        if (this.selectBeforeIndex !== -1) {
+        console.log(this.selectBeforeIndex)
+        if (this.selectBeforeIndex === -1) {
           this.selectBeforeIndex = index
         } else {
+          console.log(index)
           let min = this.selectBeforeIndex < index ? this.selectBeforeIndex : index
           const max = this.selectBeforeIndex > index ? this.selectBeforeIndex : index
           console.log(min)
@@ -103,7 +105,12 @@ export default class App extends Vue {
           }
         }
       } else if (event.ctrlKey) {
-        this.selectBeforeIndex = index
+        if (this.selectBeforeIndex === -1) {
+          this.selectBeforeIndex = index
+        } else {
+          this.fileInfoList[index].isSelect = false
+          this.fileInfoList[index].color = '#ffffff'
+        }
       } else {
         this.fileInfoList.forEach((item, i) => {
           if (item.isSelect && i !== index) {
