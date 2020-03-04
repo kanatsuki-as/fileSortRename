@@ -10,6 +10,7 @@
           </div>
           <div class="content">
             <p class="">{{fileInfo.name}}</p>
+            <p class="">パターン:{{fileInfo.petternName}}</p>
           </div>
         </div>
       </div>
@@ -30,6 +31,7 @@ import draggable from 'vuedraggable'
 import { PerfectScrollbar } from 'vue2-perfect-scrollbar'
 import VueSimpleContextMenu from 'vue-simple-context-menu'
 import 'vue-simple-context-menu/dist/vue-simple-context-menu.css'
+import fs from 'fs'
 
 @Component({
   components: {
@@ -42,17 +44,47 @@ import 'vue-simple-context-menu/dist/vue-simple-context-menu.css'
 export default class IconScreenDefault extends IconScreenBase {
   options = [
     {
+      id: 'remove',
       name: '削除',
       class: ''
     }
   ]
+
+  mounted () {
+    if (fs.readFileSync) {
+      try {
+        fs.statSync('saveFile')
+        const jsonValue = JSON.parse(fs.readFileSync('saveFile'))
+        const petternList = jsonValue
+
+        petternList.forEach(item => {
+          this.options.push({
+            id: 'select',
+            name: item.name,
+            class: ''
+          })
+        })
+      } catch (error) {
+        if (error.code === 'ENOENT') {
+          console.log('ファイル・ディレクトリは存在しません。')
+        } else {
+          alert(error)
+        }
+      }
+    }
+  }
 
   handleClick (event, item) {
     this.$refs.vueSimpleContextMenu.showMenu(event, item)
   }
 
   optionClicked (event) {
-    this.$emit('remove', event.item)
+    if (event.option.id === 'remove') {
+      this.$emit('remove', event.item)
+    } else {
+      // TODO: 選択されていなかったら処理を実行する必要あり
+      this.$emit('rightSelect', event.option.name)
+    }
   }
 }
 </script>

@@ -19,7 +19,7 @@
               </label>
             </div>
           </div>
-          <IconScreenDefault :fileInfoList.sync="fileInfoList" @remove='remove' @selectFiles='selectFiles'/>
+          <IconScreenDefault :fileInfoList.sync="fileInfoList" @remove='remove' @selectFiles='selectFiles' @rightSelect='petternSet'/>
         </section>
         <section class="hero-foot">
           <button @click="renameOutput">名前変更</button>
@@ -58,6 +58,7 @@ export default class App extends Vue {
   selectRenamePettern = 'digitFirst'
   isOpen = false
   selectBeforeIndex = -1
+  selectType = 'Select'
 
   mounted () {
     // 作業用パス
@@ -85,50 +86,72 @@ export default class App extends Vue {
   }
 
   selectFiles (evnets) {
+    // 押されたキーの判断
     const event = evnets.event
+    // 選択されたアイテム
     const index = evnets.index
-    if (!this.fileInfoList[index].isSelect) {
-      this.fileInfoList[index].isSelect = true
-      this.fileInfoList[index].color = '#aafdcc'
-      if (event.ctrlKey && event.shiftKey) {
-        console.log(this.selectBeforeIndex)
-        if (this.selectBeforeIndex === -1) {
-          this.selectBeforeIndex = index
-        } else {
-          console.log(index)
-          let min = this.selectBeforeIndex < index ? this.selectBeforeIndex : index
-          const max = this.selectBeforeIndex > index ? this.selectBeforeIndex : index
-          console.log(min)
-          for (min; min < max; min++) {
-            this.fileInfoList[min].isSelect = true
-            this.fileInfoList[min].color = '#aafdcc'
-          }
+
+    // コントロールとシフトキー
+    if (event.ctrlKey && event.shiftKey) {
+      if (this.selectBeforeIndex !== -1) {
+        let min = this.selectBeforeIndex < index ? this.selectBeforeIndex : index
+        const max = this.selectBeforeIndex > index ? this.selectBeforeIndex + 1 : index + 1
+        for (min; min < max; min++) {
+          this.fileInfoList[min].isSelect = this.selectType === 'Select' ? '#aafdcc' : '#FFFFFF'
+          this.fileInfoList[min].color = this.selectType === 'Select' ? '#aafdcc' : '#FFFFFF'
         }
-      } else if (event.ctrlKey) {
-        if (this.selectBeforeIndex === -1) {
-          this.selectBeforeIndex = index
-        } else {
-          this.fileInfoList[index].isSelect = false
-          this.fileInfoList[index].color = '#ffffff'
-        }
+      }
+    // ctrlキー
+    } else if (event.ctrlKey) {
+      // trueかfalseで選択か解除を行う
+      this.fileInfoList[index].isSelect = !this.fileInfoList[index].isSelect
+      this.selectType = this.fileInfoList[index].isSelect ? 'Select' : 'Release'
+      this.fileInfoList[index].color = this.selectType === 'Select' ? '#aafdcc' : '#ffffff'
+      this.selectBeforeIndex = index
+    // シフトキー
+    } else if (event.shiftKey) {
+      // 初回選択はクリックと同じ
+      if (this.selectBeforeIndex === -1) {
+        this.fileInfoList[index].isSelect = true
+        this.selectBeforeIndex = index
+      // 初回選択じゃない場合はクリックしたものの間にあるもの全て選択
       } else {
         this.fileInfoList.forEach((item, i) => {
-          if (item.isSelect && i !== index) {
-            item.isSelect = false
-            item.color = '#ffffff'
-          }
+          item.isSelect = false
+          item.color = '#ffffff'
         })
-        this.selectBeforeIndex = index
+        let min = this.selectBeforeIndex < index ? this.selectBeforeIndex : index
+        const max = this.selectBeforeIndex > index ? this.selectBeforeIndex + 1 : index + 1
+        for (min; min < max; min++) {
+          this.fileInfoList[min].isSelect = true
+          this.fileInfoList[min].color = '#aafdcc'
+        }
       }
+    // ただのクリック時
     } else {
-      this.fileInfoList[index].isSelect = false
-      this.fileInfoList[index].color = '#ffffff'
-      this.selectBeforeIndex = -1
+      this.fileInfoList[index].isSelect = true
+      this.fileInfoList[index].color = '#aafdcc'
+      this.fileInfoList.forEach((item, i) => {
+        if (i !== index) {
+          item.isSelect = false
+          item.color = '#ffffff'
+        }
+      })
+      this.selectBeforeIndex = index
     }
   }
 
   remove (index) {
     this.fileInfoList.splice(index, 1)
+  }
+
+  petternSet (name) {
+    this.fileInfoList.forEach((item) => {
+      if (item.isSelect) {
+        item.petternName = name
+        item.isSelect = false
+      }
+    })
   }
 
   checkDrag (event: any, key: any, status: any) {
@@ -158,6 +181,7 @@ export default class App extends Vue {
         name: file.name,
         id: '',
         color: '#FFFFFF',
+        petternName: '',
         isSelect: false
       })
     }
@@ -175,6 +199,9 @@ export default class App extends Vue {
       case 'digitLast':
       case 'digitPaddingLast':
         this.digitLast(this.selectRenamePettern === 'digitPaddingLast')
+        break
+      case 'custom':
+        this.petternChange()
         break
       default:
         alert('処理に問題が発生しました')
@@ -202,6 +229,35 @@ export default class App extends Vue {
       const newFileName = this.renameValue + textIndex + path.extname(file.path)
       fs.copyFileSync(file.path, this.outputDirectoryPath + '/' + newFileName)
       index++
+    }
+  }
+
+  petternChange () {
+    if (fs.readFileSync) {
+      try {
+        fs.statSync('saveFile')
+        const jsonValue = JSON.parse(fs.readFileSync('saveFile'))
+        const petternList = jsonValue
+        petternList.forEach(item => {
+          let index = 1
+          for (const file of this.fileInfoList) {
+            // TODO: ここでID必要かも…
+            if (item.name === file.petternName) {
+              // TODO: indexを桁つきでかつ色々設定できるように…
+              const fileName = item.name + index.toString()
+              const newFileName = fileName + path.extname(file.path)
+              fs.copyFileSync(file.path, this.outputDirectoryPath + '/' + newFileName)
+              index++
+            }
+          }
+        })
+      } catch (error) {
+        if (error.code === 'ENOENT') {
+          console.log('ファイル・ディレクトリは存在しません。')
+        } else {
+          alert(error)
+        }
+      }
     }
   }
 }
