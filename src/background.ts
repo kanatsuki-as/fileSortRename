@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, protocol, BrowserWindow, Menu, MenuItem } from 'electron'
+import { app, protocol, BrowserWindow, ipcMain } from 'electron'
 import {
   createProtocol
   /* installVueDevtools */
@@ -20,29 +20,9 @@ function createWindow () {
     width: 800,
     height: 600,
     webPreferences: {
-      nodeIntegration: true,
-      webSecurity: process.env.NODE_ENV !== 'development'
+      nodeIntegration: true
     }
   })
-
-  const menu = new Menu()
-  menu.append(new MenuItem(
-    {
-      label: 'MenuItem1',
-      type: 'submenu',
-      submenu: [
-        { role: 'minimize' },
-        { role: 'selectAll' },
-        {
-          label: 'MenuItem2',
-          click () { console.log('item 1 clicked') }
-        }
-      ]
-    })
-  )
-  // メニュー追加
-  // TODO: メニュー処理
-  // win.setMenu(menu)
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
@@ -111,3 +91,7 @@ if (isDevelopment) {
     })
   }
 }
+
+ipcMain.on('test', function(event) {
+  event.sender.send('test-replay', 'messageOK');
+});
