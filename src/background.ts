@@ -1,6 +1,10 @@
 'use strict'
 
-import { app, protocol, BrowserWindow, Menu, MenuItem } from 'electron'
+import { app, protocol, BrowserWindow, ipcMain } from 'electron'
+import backMain from './bacKMainProcess'
+import { fileInfo } from './interface'
+
+
 import {
   createProtocol
   /* installVueDevtools */
@@ -22,27 +26,9 @@ function createWindow () {
     webPreferences: {
       nodeIntegration: true,
       webSecurity: process.env.NODE_ENV !== 'development'
+
     }
   })
-
-  const menu = new Menu()
-  menu.append(new MenuItem(
-    {
-      label: 'MenuItem1',
-      type: 'submenu',
-      submenu: [
-        { role: 'minimize' },
-        { role: 'selectAll' },
-        {
-          label: 'MenuItem2',
-          click () { console.log('item 1 clicked') }
-        }
-      ]
-    })
-  )
-  // メニュー追加
-  // TODO: メニュー処理
-  // win.setMenu(menu)
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
@@ -111,3 +97,21 @@ if (isDevelopment) {
     })
   }
 }
+
+// 以下今回の処理で使うもの
+
+ipcMain.on('init', function(event) {
+  backMain.init()
+  event.sender.send('init-replay', 'messageOK');
+});
+
+ipcMain.on('fileLoad', function(event, arg: fileInfo[]) {
+  console.log(event)
+  const dataList = backMain.fileLoad(arg)
+  event.sender.send('fileLoad-replay', dataList);
+});
+
+ipcMain.on('output', function(event) {
+  const retObj = backMain.renameOutput('')
+  event.sender.send('output-replay', retObj);
+});

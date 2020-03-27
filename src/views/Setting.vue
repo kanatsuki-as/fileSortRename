@@ -32,7 +32,6 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import 'bulma/css/bulma.css'
 import { PerfectScrollbar } from 'vue2-perfect-scrollbar'
 import VueSimpleContextMenu from 'vue-simple-context-menu'
 import 'vue-simple-context-menu/dist/vue-simple-context-menu.css'
@@ -72,19 +71,19 @@ export default class Setting extends Vue {
   }
 
   mounted () {
-    if (fs.readFileSync) {
-      try {
-        fs.statSync('saveFile')
-        const jsonValue = JSON.parse(fs.readFileSync('saveFile'))
-        this.petternList = jsonValue
-      } catch (error) {
-        if (error.code === 'ENOENT') {
-          console.log('ファイル・ディレクトリは存在しません。')
-        } else {
-          alert(error)
-        }
-      }
-    }
+    // if (fs.readFileSync) {
+    //   try {
+    //     fs.statSync('saveFile')
+    //     const jsonValue = JSON.parse(fs.readFileSync('saveFile'))
+    //     this.petternList = jsonValue
+    //   } catch (error) {
+    //     if (error.code === 'ENOENT') {
+    //       console.log('ファイル・ディレクトリは存在しません。')
+    //     } else {
+    //       alert(error)
+    //     }
+    //   }
+    // }
   }
 
   save (change, index, value) {
