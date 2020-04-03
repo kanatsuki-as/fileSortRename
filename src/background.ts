@@ -2,7 +2,7 @@
 
 import { app, protocol, BrowserWindow, ipcMain } from 'electron'
 import backMain from './bacKMainProcess'
-import { fileInfo } from './interface'
+import { fileInfo, outputRenameData } from './interface'
 
 
 import {
@@ -105,13 +105,17 @@ ipcMain.on('init', function(event) {
   event.sender.send('init-replay', 'messageOK');
 });
 
-ipcMain.on('fileLoad', function(event, arg: fileInfo[]) {
-  console.log(event)
-  const dataList = backMain.fileLoad(arg)
-  event.sender.send('fileLoad-replay', dataList);
+ipcMain.on('imageLoad', function(event, arg: fileInfo[]) {
+  const dataList = backMain.imageLoad(arg)
+  event.sender.send('imageLoad-replay', dataList);
 });
 
-ipcMain.on('output', function(event) {
-  const retObj = backMain.renameOutput('')
-  event.sender.send('output-replay', retObj);
+ipcMain.on('rename', function(event, arg: outputRenameData) {
+  const retObj = backMain.renameOutputDigit(arg)
+  event.sender.send('rename-replay', retObj);
+});
+
+ipcMain.on('settingFileLoad', function(event) {
+  const dataList = backMain.settingFileload()
+  event.sender.send('settingFileLoad-replay', dataList);
 });

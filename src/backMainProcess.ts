@@ -2,7 +2,7 @@
 
 import fs from 'fs'
 import path from 'path'
-import { resultInterface, fileInfo } from './interface'
+import { resultInterface, fileInfo, outputRenameData } from './interface'
 
 
 // 作業用パス
@@ -21,7 +21,7 @@ class BackMainProcess {
     removeFiles(outputDirectoryPath)
   }
 
-  fileLoad (dataList: fileInfo[]) {
+  imageLoad (dataList: fileInfo[]) {
     // 現在のディレクトリにファイルをコピーしてから画面に表示する
     for (const file of dataList) {
       // TODO:ファイルを上書きしちゃうので、ファイル名を変更するかエラーにしないとダメ
@@ -33,63 +33,70 @@ class BackMainProcess {
   }
 
   // リネーム処理
-  renameOutput (selectRenamePettern:string) {
+  renameOutputDigit (renameOutputData: outputRenameData) {
     // 出力先をフォルダの内容を削除しておく
     removeFiles(outputDirectoryPath)
 
-    let retrunObj:resultInterface = {message:'ok', code:200};
-    switch (selectRenamePettern) {
+    let retrunObj:resultInterface = {message:'出力しました', code:200};
+    switch (renameOutputData.renameType) {
       case 'digitFirst':
       case 'digitPaddingFirst':
-        digitFirst(selectRenamePettern === 'digitPaddingFirst')
+        digitFirst(renameOutputData, renameOutputData.renameType === 'digitPaddingFirst')
         break
       case 'digitLast':
       case 'digitPaddingLast':
-        digitLast(selectRenamePettern === 'digitPaddingLast')
-        break
-      case 'custom':
-        petternChange()
+        digitLast(renameOutputData, renameOutputData.renameType === 'digitPaddingLast')
         break
       default:
         retrunObj = {
           message:'処理に問題が発生しました',
           code:400
         }
-        alert()
         return
     }
     
     return retrunObj
   }
-}
 
-function digitFirst (padding: boolean) {
-  let index = 1
-  // TODO:桁の制御
-  for (const file of this.fileInfoList) {
-    const textIndex = padding ? ('000' + index).slice(-3) : index
-    const newFileName = textIndex + this.renameValue + path.extname(file.path)
-    fs.copyFileSync(file.path, this.outputDirectoryPath + '/' + newFileName)
-    index++
-  }
-}
-function  digitLast (padding: boolean) {
-  let index = 1
-  // TODO:桁の制御
-  for (const file of this.fileInfoList) {
-    const textIndex = padding ? ('000' + index).slice(-3) : index
-    const newFileName = this.renameValue + textIndex + path.extname(file.path)
-    fs.copyFileSync(file.path, this.outputDirectoryPath + '/' + newFileName)
-    index++
+  settingFileload () {
+    if (fs.readFileSync) {
+      try {
+        fs.statSync('saveFile')
+        return JSON.parse(fs.readFileSync('saveFile').toString())
+      } catch (error) {
+        if (error.code === 'ENOENT') {
+          return ''
+        } else {
+          alert(error)
+        }
+      }
+    }
   }
 }
 
-function petternChange () {
+function digitFirst (renameOutputData: outputRenameData, padding: boolean) {
+  let index = 1
+  for (const file of renameOutputData.renameList) {
+    const textIndex = padding ? (('0').repeat(renameOutputData.digit) + index).slice(-3) : index
+    const newFileName = textIndex + renameOutputData.renameValue + path.extname(file.path)
+    fs.copyFileSync(file.path, outputDirectoryPath + '/' + newFileName)
+    index++
+  }
+}
+function  digitLast (renameOutputData: outputRenameData, padding: boolean) {
+  let index = 1
+  for (const file of renameOutputData.renameList) {
+    const textIndex = padding ? (('0').repeat(renameOutputData.digit) + index).slice(-3) : index
+    const newFileName = renameOutputData.renameValue + textIndex + path.extname(file.path)
+    fs.copyFileSync(file.path, outputDirectoryPath + '/' + newFileName)
+    index++
+  }
+}
+
+function customChange () {
   // if (fs.readFileSync) {
   //   try {
-  //     fs.statSync('saveFile')
-  //     const jsonValue = JSON.parse(fs.readFileSync('saveFile'))
-  //     const petternList = jsonValue
+  //     const petternList = JSON.parse(fs.readFileSync('saveFile').toString())
   //     petternList.forEach(item => {
   //       let index = 1
   //       for (const file of this.fileInfoList) {
@@ -107,12 +114,11 @@ function petternChange () {
   //     if (error.code === 'ENOENT') {
   //       console.log('ファイル・ディレクトリは存在しません。')
   //     } else {
-  //       alert(error)
+  //       console.log(error)
   //     }
   //   }
   // }
 }
-
 
 // ディレクトリ作成
 function createDirectory (path: string) {
