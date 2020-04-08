@@ -11,6 +11,7 @@ export interface renameData{
   id: string
   color: string
   petternName: string
+  petternColor: string
   isSelect: boolean
 }
 
@@ -44,6 +45,7 @@ export interface options {
   id: string
   name: string
   class: string
+  color: string
 }
 
 export interface renameType {

@@ -20,11 +20,9 @@
       <v-col cols="12" v-if="selectRenameType.value !== 'custom'">
         <RenameInfo :selectRenameType="selectRenameType" @renameValue="renameValue = $event" @digit="digit = $event"></RenameInfo>
       </v-col>
-      <v-col cols="12">
-        <PerfectScrollbar>
-          <ScreenDefault :selectRenameType="selectRenameType"></ScreenDefault>
-        </PerfectScrollbar>
-      </v-col>
+        <v-col cols="12" style="height:1000px; width:100%; overflow-y:scroll;">
+            <ScreenDefault :selectRenameType="selectRenameType"></ScreenDefault>
+        </v-col>
     </v-row>
   </v-container>
 </template>
@@ -37,13 +35,11 @@ import ImageUpload from './../components/ImageUpload.vue'
 import RenameInfo from './../components/RenameInfo.vue'
 import ScreenDefault from './../components/ScreenDefault.vue'
 
-import { PerfectScrollbar } from 'vue2-perfect-scrollbar'
 import { proxies } from './../store'
 
 @Component({
   components: {
     ScreenDefault,
-    PerfectScrollbar,
     ImageUpload,
     RenameInfo
   }
@@ -118,3 +114,9 @@ export default class Main extends Vue {
   }
 }
 </script>
+
+<style>
+.ps {
+  height: 400px;
+}
+</style>

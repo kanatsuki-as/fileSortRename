@@ -2,15 +2,18 @@
   <div>
     <draggable v-model='app.renameInfoList' class="grid">
       <div v-for="(fileInfo, index) in app.renameInfoList" :key="index" @click.right.prevent.stop="handleClick($event, index)" @click.left.prevent.stop="app.selectFiles({event: $event, index: index})">
-        <v-card class="mx-auto"  :style="{ background: fileInfo.color}">
-          <v-img aspect-ratio="1.5" contain :src="fileInfo.path"></v-img>
-          <div class="content">
-            <v-card-title>{{fileInfo.name}}</v-card-title>
-            <v-card-text class="text--primary title">
-              <p class="title">パターン:{{fileInfo.petternName}}</p>
-            </v-card-text>
+        <div :style="{ background: fileInfo.color}">
+          <div class="card_image">
+            <v-layout justify-center>
+              <v-img aspect-ratio="1.0" max-height="100" max-width="100" contain :src="fileInfo.path"></v-img>
+            </v-layout>
           </div>
-        </v-card>
+          <div class="card_text" :style="{ background: fileInfo.color}">
+            <p>{{fileInfo.name}}</p>
+            <p>パターン:</p>
+            <p>{{fileInfo.petternName}}</p>
+          </div>
+        </div>
       </div>
     </draggable>
     <vue-simple-context-menu
@@ -60,7 +63,8 @@ export default class IconScreenDefault extends Vue {
       {
         id: 'remove',
         name: '削除',
-        class: ''
+        class: '',
+        color: ''
       })
 
     if (this.selectRenameType.value === 'custom') {
@@ -68,6 +72,7 @@ export default class IconScreenDefault extends Vue {
         this.options.push({
           id: item.id,
           name: item.name,
+          color: item.name,
           class: ''
         })
       })
@@ -86,7 +91,7 @@ export default class IconScreenDefault extends Vue {
     if (event.option.id === 'remove') {
       this.app.remove(event.item)
     } else {
-      this.app.petternSet(event.option.name)
+      this.app.petternSet({ name: event.option.name, color: event.option.color })
     }
   }
 }
@@ -101,4 +106,13 @@ export default class IconScreenDefault extends Vue {
 .title {
   text-align: center;
 }
+
+.card_image {
+  padding: 10px;
+}
+
+.card_text {
+  font-size: 10pt;
+}
+
 </style>

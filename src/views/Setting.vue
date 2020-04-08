@@ -1,13 +1,13 @@
 <template>
-  <PerfectScrollbar>
+  <div>
     <v-container>
-        <v-row>
-          <v-col cols="12">
-            <v-btn class="ma-2" @click="petternAdd">追加</v-btn>
-            <v-btn class="ma-2" @click="save">保存</v-btn>
-            <v-btn class="ma-2" @click="allDelete">全件削除</v-btn>
-          </v-col>
+      <v-row>
         <v-col cols="12">
+          <v-btn class="ma-2" @click="petternAdd">追加</v-btn>
+          <v-btn class="ma-2" @click="save">保存</v-btn>
+          <v-btn class="ma-2" @click="allDelete">全件削除</v-btn>
+        </v-col>
+        <v-col cols="12" style="height:1000px; width:100%; overflow-y:scroll;">
           <v-simple-table class="table">
             <template v-slot:default>
               <thead>
@@ -29,17 +29,16 @@
         </v-col>
       </v-row>
     </v-container>
-  <vue-simple-context-menu
-  :elementId="'screenDefault'"
-  :options="options"
-  :ref="'vueSimpleContextMenu'"
-  @option-clicked="optionClicked"/>
-  </PerfectScrollbar>
+    <vue-simple-context-menu
+    :elementId="'screenDefault'"
+    :options="options"
+    :ref="'vueSimpleContextMenu'"
+    @option-clicked="optionClicked"/>
+  </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import { PerfectScrollbar } from 'vue2-perfect-scrollbar'
 import { ipcRenderer } from 'electron'
 import VueSimpleContextMenu from 'vue-simple-context-menu'
 import 'vue-simple-context-menu/dist/vue-simple-context-menu.css'
@@ -48,7 +47,6 @@ import { v4 as uuidv4 } from 'uuid'
 
 @Component({
   components: {
-    PerfectScrollbar,
     VueSimpleContextMenu
   }
 })

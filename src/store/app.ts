@@ -5,6 +5,8 @@ const VuexModule = createModule({
   namespaced: ''
 })
 
+const selectColor = '#cce8ffcc'
+
 export default class extends VuexModule {
   /** 初期化済み */
   renameInfoList: renameData[] = []
@@ -26,6 +28,7 @@ export default class extends VuexModule {
         id: '',
         color: '#FFFFFF',
         petternName: '',
+        petternColor: '',
         isSelect: false
       })
     }
@@ -46,7 +49,7 @@ export default class extends VuexModule {
         const max = this.selectBeforeIndex > index ? this.selectBeforeIndex + 1 : index + 1
         for (min; min < max; min++) {
           this.renameInfoList[min].isSelect = !this.renameInfoList[index].isSelect
-          this.renameInfoList[min].color = this.selectType === 'Select' ? '#aafdcc' : '#FFFFFF'
+          this.renameInfoList[min].color = this.selectType === 'Select' ? selectColor : '#FFFFFF'
         }
       }
     // ctrlキー
@@ -54,7 +57,7 @@ export default class extends VuexModule {
       // trueかfalseで選択か解除を行う
       this.renameInfoList[index].isSelect = !this.renameInfoList[index].isSelect
       this.selectType = this.renameInfoList[index].isSelect ? 'Select' : 'Release'
-      this.renameInfoList[index].color = this.selectType === 'Select' ? '#aafdcc' : '#ffffff'
+      this.renameInfoList[index].color = this.selectType === 'Select' ? selectColor : '#ffffff'
       this.selectBeforeIndex = index
     // シフトキー
     } else if (event.shiftKey) {
@@ -72,7 +75,7 @@ export default class extends VuexModule {
         const max = this.selectBeforeIndex > index ? this.selectBeforeIndex + 1 : index + 1
         for (min; min < max; min++) {
           this.renameInfoList[min].isSelect = true
-          this.renameInfoList[min].color = '#aafdcc'
+          this.renameInfoList[min].color = selectColor
         }
       }
     // ただのクリック時
@@ -84,7 +87,7 @@ export default class extends VuexModule {
   @action
   public async click (index: number) {
     this.renameInfoList[index].isSelect = true
-    this.renameInfoList[index].color = '#aafdcc'
+    this.renameInfoList[index].color = selectColor
     this.renameInfoList.forEach((item, i) => {
       if (i !== index) {
         item.isSelect = false
@@ -102,10 +105,11 @@ export default class extends VuexModule {
 
   // パターンリスト
   @action
-  public async petternSet (name) {
+  public async petternSet ({ name, color }) {
     this.renameInfoList.forEach((item) => {
       if (item.isSelect) {
         item.petternName = name
+        item.petternColor = color
         item.isSelect = false
       }
     })

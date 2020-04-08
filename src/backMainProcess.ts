@@ -118,7 +118,8 @@ function customChange (renameOutputData: outputRenameData) {
     const fileList = renameOutputData.renameList.filter(n => n.petternName === settingData.name)
     for (const file of fileList) {
       // TODO: indexを桁つきでかつ色々設定できるように…
-      const fileName = file.name + index.toString()
+      console.log(file.petternName)
+      const fileName = file.petternName + index.toString()
       const newFileName = fileName + path.extname(file.path)
       fs.copyFileSync(file.path, outputDirectoryPath + '/' + newFileName)
       index++
