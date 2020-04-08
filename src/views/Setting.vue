@@ -2,34 +2,23 @@
   <PerfectScrollbar>
     <v-container>
         <v-row>
-          <v-col cols="1">
-            <v-btn @click="petternAdd">追加</v-btn>
-          </v-col>
-          <v-col cols="1">
-            <v-btn @click="save">保存</v-btn>
-          </v-col>
-          <v-col cols="1">
-            <v-btn @click="load">読み込み</v-btn>
-          </v-col>
-          <v-col cols="1">
-            <v-btn @click="allDelete">全件削除</v-btn>
-          </v-col>
-          <v-col cols="8">
+          <v-col cols="12">
+            <v-btn class="ma-2" @click="petternAdd">追加</v-btn>
+            <v-btn class="ma-2" @click="save">保存</v-btn>
+            <v-btn class="ma-2" @click="allDelete">全件削除</v-btn>
           </v-col>
         <v-col cols="12">
           <v-simple-table class="table">
             <template v-slot:default>
               <thead>
                 <tr>
-                  <th>パターンの識別名</th>
                   <th>パターン名</th>
                   <th>パターンカラー</th>
                   <th>削除</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(pettern, index) in petternList" :key="index">
-                  <td><v-text-field v-model='pettern.id' placeholder="識別名"></v-text-field></td>
+                <tr v-for="(pettern, index) in listDatas" :key="index">
                   <td><v-text-field v-model='pettern.name' placeholder="リネーム時のパターン"></v-text-field></td>
                   <td><v-color-picker type="rgba" v-model="pettern.color"></v-color-picker></td>
                   <td><v-btn @click="remove(index)">削除</v-btn></td>
@@ -54,7 +43,8 @@ import { PerfectScrollbar } from 'vue2-perfect-scrollbar'
 import { ipcRenderer } from 'electron'
 import VueSimpleContextMenu from 'vue-simple-context-menu'
 import 'vue-simple-context-menu/dist/vue-simple-context-menu.css'
-import fs from 'fs'
+import { proxies } from './../store'
+import { v4 as uuidv4 } from 'uuid'
 
 @Component({
   components: {
@@ -64,8 +54,6 @@ import fs from 'fs'
 })
 
 export default class Setting extends Vue {
-  petternList: any[] = [];
-
   options = [
     {
       name: '削除',
@@ -73,42 +61,42 @@ export default class Setting extends Vue {
     }
   ]
 
+  get listDatas () {
+    return proxies.setting.datas
+  }
+
+  set listDatas (value) {
+    proxies.setting.datas = value
+  }
+
   handleClick (event, item) {
     this.$refs.vueSimpleContextMenu.showMenu(event, item)
   }
 
   optionClicked (event) {
-    this.petternList.splice(event.item, 1)
+    this.listDatas.splice(event.item, 1)
   }
 
   petternAdd () {
-    this.petternList.push({
-      id: '',
+    this.listDatas.push({
+      id: uuidv4(),
       name: '',
       color: { r: 255, g: 0, b: 255, a: 1 }
     })
   }
 
   save () {
-    fs.writeFileSync('saveFile', JSON.stringify(this.petternList))
+    ipcRenderer.sendSync('settingFileSave', this.listDatas)
     alert('保存しました')
   }
 
-  load () {
-    ipcRenderer.send('settingFileLoad')
-    ipcRenderer.on('settingFileLoad-replay', async (event, arg: any[]) => {
-      this.petternList = arg
-      alert('読み込みました')
-    })
-  }
-
   remove (index) {
-    this.petternList.splice(index, 1)
+    this.listDatas.splice(index, 1)
   }
 
   allDelete () {
     if (window.confirm('全件削除します。よろしいですか')) {
-      this.petternList = []
+      this.listDatas = []
       alert('全件削除しました')
     }
   }

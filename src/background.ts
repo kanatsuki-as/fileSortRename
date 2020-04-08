@@ -2,7 +2,7 @@
 
 import { app, protocol, BrowserWindow, ipcMain } from 'electron'
 import backMain from './bacKMainProcess'
-import { fileInfo, outputRenameData } from './interface'
+import { fileInfo, outputRenameData, settinPettern } from './interface'
 
 
 import {
@@ -100,22 +100,33 @@ if (isDevelopment) {
 
 // 以下今回の処理で使うもの
 
+/* 初期化処理 */
 ipcMain.on('init', function(event) {
   backMain.init()
-  event.sender.send('init-replay', 'messageOK');
+  event.returnValue = ''
 });
 
-ipcMain.on('imageLoad', function(event, arg: fileInfo[]) {
-  const dataList = backMain.imageLoad(arg)
-  event.sender.send('imageLoad-replay', dataList);
-});
-
+/* リネーム処理 */
 ipcMain.on('rename', function(event, arg: outputRenameData) {
   const retObj = backMain.renameOutputDigit(arg)
-  event.sender.send('rename-replay', retObj);
+  event.returnValue = retObj.message
 });
 
+/* 設定読み込み処理 */
 ipcMain.on('settingFileLoad', function(event) {
   const dataList = backMain.settingFileload()
-  event.sender.send('settingFileLoad-replay', dataList);
+  event.returnValue = dataList
 });
+
+/* 設定保存処理 */
+ipcMain.on('settingFileSave', function(event, arg: settinPettern[]) {
+  backMain.settingFileSave(arg)
+  event.returnValue = ''
+});
+
+/* ファイル読み込み処理 */
+ipcMain.on('imageLoad', function(event, arg: fileInfo[]) {
+  const dataList = backMain.imageLoad(arg)
+  event.sender.send('imageLoad-replay', dataList)
+});
+

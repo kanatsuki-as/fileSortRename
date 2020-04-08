@@ -22,7 +22,7 @@
       </v-col>
       <v-col cols="12">
         <PerfectScrollbar>
-          <ScreenDefault></ScreenDefault>
+          <ScreenDefault :selectRenameType="selectRenameType"></ScreenDefault>
         </PerfectScrollbar>
       </v-col>
     </v-row>
@@ -32,7 +32,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import { ipcRenderer } from 'electron'
-import { fileInfo, outputRenameData } from './../interface'
+import { fileInfo, outputRenameData, renameType } from './../interface'
 import ImageUpload from './../components/ImageUpload.vue'
 import RenameInfo from './../components/RenameInfo.vue'
 import ScreenDefault from './../components/ScreenDefault.vue'
@@ -50,7 +50,7 @@ import { proxies } from './../store'
 })
 export default class Main extends Vue {
   msg = ''
-  renameType = [
+  renameType: renameType[] = [
     {
       value: 'digitFirst',
       label: '先頭数字埋め'
@@ -73,7 +73,7 @@ export default class Main extends Vue {
     }
   ]
 
-  selectRenameType = {
+  selectRenameType: renameType = {
     value: 'digitFirst',
     label: '先頭数字埋め'
   }
@@ -86,7 +86,8 @@ export default class Main extends Vue {
   }
 
   mounted () {
-    ipcRenderer.send('init')
+    ipcRenderer.sendSync('init')
+    proxies.setting.datas = ipcRenderer.sendSync('settingFileLoad')
   }
 
   imageLoad (dataList: fileInfo[]) {
@@ -99,12 +100,12 @@ export default class Main extends Vue {
   }
 
   rename () {
-    // TODO: 数字や文字列の対策
     if (this.digit < 1) {
       alert('数字は1～9を入力してください')
       return
     }
 
+    console.log(this.digit)
     const data: outputRenameData = {
       renameType: this.selectRenameType.value,
       renameList: this.app.renameInfoList,
@@ -112,10 +113,8 @@ export default class Main extends Vue {
       digit: this.digit
     }
 
-    ipcRenderer.send('rename', data)
-    ipcRenderer.on('rename-replay', async () => {
-      alert('出力しました')
-    })
+    ipcRenderer.sendSync('rename', data)
+    alert('出力しました')
   }
 }
 </script>

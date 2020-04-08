@@ -2,7 +2,7 @@
 
 import fs from 'fs'
 import path from 'path'
-import { resultInterface, fileInfo, outputRenameData } from './interface'
+import { resultInterface, fileInfo, outputRenameData, settinPettern } from './interface'
 
 
 // 作業用パス
@@ -47,6 +47,9 @@ class BackMainProcess {
       case 'digitPaddingLast':
         digitLast(renameOutputData, renameOutputData.renameType === 'digitPaddingLast')
         break
+      case 'custom':
+        customChange(renameOutputData)
+        break;
       default:
         retrunObj = {
           message:'処理に問題が発生しました',
@@ -59,16 +62,31 @@ class BackMainProcess {
   }
 
   settingFileload () {
-    if (fs.readFileSync) {
-      try {
-        fs.statSync('saveFile')
-        return JSON.parse(fs.readFileSync('saveFile').toString())
-      } catch (error) {
-        if (error.code === 'ENOENT') {
-          return ''
-        } else {
-          alert(error)
-        }
+    return fileLoad('saveFile')
+  }
+
+  settingFileSave (dataList: settinPettern[]) {
+    try {
+      fs.writeFileSync('saveFile', JSON.stringify(dataList))
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        return ''
+      }
+    }
+  }
+}
+
+function fileLoad (fileName: string): settinPettern[] {
+  if (fs.readFileSync) {
+    try {
+      // ファイル存在判定。なければエラーになるので、try/catchでくるむ
+      fs.statSync(fileName)
+      return JSON.parse(fs.readFileSync(fileName).toString())
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        return []
+      } else {
+        alert(error)
       }
     }
   }
@@ -77,7 +95,7 @@ class BackMainProcess {
 function digitFirst (renameOutputData: outputRenameData, padding: boolean) {
   let index = 1
   for (const file of renameOutputData.renameList) {
-    const textIndex = padding ? (('0').repeat(renameOutputData.digit) + index).slice(-3) : index
+    const textIndex = padding ? (('00000000') + index).slice(-1 * renameOutputData.digit) : index
     const newFileName = textIndex + renameOutputData.renameValue + path.extname(file.path)
     fs.copyFileSync(file.path, outputDirectoryPath + '/' + newFileName)
     index++
@@ -86,38 +104,26 @@ function digitFirst (renameOutputData: outputRenameData, padding: boolean) {
 function  digitLast (renameOutputData: outputRenameData, padding: boolean) {
   let index = 1
   for (const file of renameOutputData.renameList) {
-    const textIndex = padding ? (('0').repeat(renameOutputData.digit) + index).slice(-3) : index
+    const textIndex = padding ?  (('00000000') + index).slice(-1 * renameOutputData.digit) : index
     const newFileName = renameOutputData.renameValue + textIndex + path.extname(file.path)
     fs.copyFileSync(file.path, outputDirectoryPath + '/' + newFileName)
     index++
   }
 }
 
-function customChange () {
-  // if (fs.readFileSync) {
-  //   try {
-  //     const petternList = JSON.parse(fs.readFileSync('saveFile').toString())
-  //     petternList.forEach(item => {
-  //       let index = 1
-  //       for (const file of this.fileInfoList) {
-  //         // TODO: ここでID必要かも…
-  //         if (item.name === file.petternName) {
-  //           // TODO: indexを桁つきでかつ色々設定できるように…
-  //           const fileName = item.name + index.toString()
-  //           const newFileName = fileName + path.extname(file.path)
-  //           fs.copyFileSync(file.path, this.outputDirectoryPath + '/' + newFileName)
-  //           index++
-  //         }
-  //       }
-  //     })
-  //   } catch (error) {
-  //     if (error.code === 'ENOENT') {
-  //       console.log('ファイル・ディレクトリは存在しません。')
-  //     } else {
-  //       console.log(error)
-  //     }
-  //   }
-  // }
+function customChange (renameOutputData: outputRenameData) {
+  const settingDatas = fileLoad('saveFile')
+  settingDatas.forEach(settingData => {
+    let index = 1
+    const fileList = renameOutputData.renameList.filter(n => n.petternName === settingData.name)
+    for (const file of fileList) {
+      // TODO: indexを桁つきでかつ色々設定できるように…
+      const fileName = file.name + index.toString()
+      const newFileName = fileName + path.extname(file.path)
+      fs.copyFileSync(file.path, outputDirectoryPath + '/' + newFileName)
+      index++
+    }
+  })
 }
 
 // ディレクトリ作成

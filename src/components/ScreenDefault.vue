@@ -22,11 +22,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Vue, Prop, Watch } from 'vue-property-decorator'
 import draggable from 'vuedraggable'
 import VueSimpleContextMenu from 'vue-simple-context-menu'
 import 'vue-simple-context-menu/dist/vue-simple-context-menu.css'
 import { proxies } from './../store'
+import { options, renameType } from '@/interface'
 
 @Component({
   components: {
@@ -35,27 +36,56 @@ import { proxies } from './../store'
   }
 })
 export default class IconScreenDefault extends Vue {
-  options = [
-    {
-      id: 'remove',
-      name: '削除',
-      class: ''
-    }
-  ]
+  options: options[] = []
+
+  @Prop()
+  selectRenameType: renameType
 
   get app () {
     return proxies.app
   }
 
-  handleClick (event, item) {
-    this.$refs.vueSimpleContextMenu.showMenu(event, item)
+  mounted () {
+    this.rightMenuSetting()
+  }
+
+  @Watch('selectRenameType')
+  isChangeSelectRenameType () {
+    this.rightMenuSetting()
+  }
+
+  rightMenuSetting () {
+    this.options = []
+    this.options.push(
+      {
+        id: 'remove',
+        name: '削除',
+        class: ''
+      })
+
+    if (this.selectRenameType.value === 'custom') {
+      proxies.setting.datas.forEach(item => {
+        this.options.push({
+          id: item.id,
+          name: item.name,
+          class: ''
+        })
+      })
+    }
+  }
+
+  handleClick (event, index) {
+    // 特殊キーが押されていないかつ、選択処理が行われていない画像を右クリックしていたらそのファイルのみ選択を行う
+    if (!event.ctrlKey && !event.shiftKey && !this.app.renameInfoList[index].isSelect) {
+      this.app.click(index)
+    }
+    this.$refs.vueSimpleContextMenu.showMenu(event, index)
   }
 
   optionClicked (event) {
     if (event.option.id === 'remove') {
       this.app.remove(event.item)
     } else {
-      // TODO: 選択されていなかったら処理を実行する必要あり
       this.app.petternSet(event.option.name)
     }
   }

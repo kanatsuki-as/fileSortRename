@@ -77,16 +77,21 @@ export default class extends VuexModule {
       }
     // ただのクリック時
     } else {
-      this.renameInfoList[index].isSelect = true
-      this.renameInfoList[index].color = '#aafdcc'
-      this.renameInfoList.forEach((item, i) => {
-        if (i !== index) {
-          item.isSelect = false
-          item.color = '#ffffff'
-        }
-      })
-      this.selectBeforeIndex = index
+      this.click(index)
     }
+  }
+
+  @action
+  public async click (index: number) {
+    this.renameInfoList[index].isSelect = true
+    this.renameInfoList[index].color = '#aafdcc'
+    this.renameInfoList.forEach((item, i) => {
+      if (i !== index) {
+        item.isSelect = false
+        item.color = '#ffffff'
+      }
+    })
+    this.selectBeforeIndex = index
   }
 
   // 削除
