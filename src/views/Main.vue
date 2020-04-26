@@ -1,28 +1,35 @@
 <template>
   <v-container>
     <v-row>
+      <v-col cols="10">
+        <v-expansion-panels focusable>
+          <v-expansion-panel>
+            <v-expansion-panel-header>リネームタイプ:{{selectRenameType.label}}</v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <v-select
+                v-model="selectRenameType"
+                label="変換パターン"
+                item-text="label"
+                item-value="value"
+                :items="renameType"
+                return-object>
+              </v-select>
+              <template v-if="selectRenameType.value !== 'custom'">
+                <RenameInfo :selectRenameType="selectRenameType" @renameValue="renameValue = $event" @digit="digit = $event"></RenameInfo>
+              </template>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </v-col>
+      <v-col cols="2">
+        <v-btn @click="rename">リネーム開始</v-btn>
+      </v-col>
       <v-col cols="12">
         <ImageUpload @imageLoad="imageLoad($event)" :msg="msg"></ImageUpload>
       </v-col>
       <v-col cols="12">
-        <v-select
-          v-model="selectRenameType"
-          label="変換パターン"
-          item-text="label"
-          item-value="value"
-          :items="renameType"
-          return-object>
-        </v-select>
+        <ScreenDefault :selectRenameType="selectRenameType"></ScreenDefault>
       </v-col>
-      <v-col cols="12">
-        <v-btn @click="rename">リネーム開始</v-btn>
-      </v-col>
-      <v-col cols="12" v-if="selectRenameType.value !== 'custom'">
-        <RenameInfo :selectRenameType="selectRenameType" @renameValue="renameValue = $event" @digit="digit = $event"></RenameInfo>
-      </v-col>
-        <v-col cols="12" style="height:1000px; width:100%; overflow-y:scroll;">
-            <ScreenDefault :selectRenameType="selectRenameType"></ScreenDefault>
-        </v-col>
     </v-row>
   </v-container>
 </template>
@@ -87,7 +94,6 @@ export default class Main extends Vue {
   }
 
   imageLoad (dataList: fileInfo[]) {
-    console.log(dataList)
     ipcRenderer.send('imageLoad', dataList)
     ipcRenderer.on('imageLoad-replay', async (event, arg: fileInfo[]) => {
       await this.app.renameDataSetting(arg)
@@ -101,7 +107,6 @@ export default class Main extends Vue {
       return
     }
 
-    console.log(this.digit)
     const data: outputRenameData = {
       renameType: this.selectRenameType.value,
       renameList: this.app.renameInfoList,

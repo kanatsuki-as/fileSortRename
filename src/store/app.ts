@@ -1,8 +1,9 @@
-import { action, createModule } from 'vuex-class-component'
+import { createModule, action } from 'vuex-class-component'
 import { renameData, fileInfo } from '@/interface'
 
 const VuexModule = createModule({
-  namespaced: ''
+  namespaced: 'app',
+  strict: false
 })
 
 const selectColor = '#cce8ffcc'

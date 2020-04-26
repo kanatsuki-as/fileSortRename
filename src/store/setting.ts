@@ -1,9 +1,11 @@
-import { createModule } from 'vuex-class-component'
+import { createModule, action } from 'vuex-class-component'
 import { settinPettern } from '@/interface'
 
-export default class extends createModule({
-  namespaced: ''
-}) {
+const VuexModule = createModule({
+  namespaced: 'setting'
+})
+
+export default class extends VuexModule {
   /** 初期化済み */
   private settingList: settinPettern[] = []
 
