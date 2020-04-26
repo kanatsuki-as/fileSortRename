@@ -48,6 +48,10 @@ export default class IconScreenDefault extends Vue {
     return proxies.app
   }
 
+  get refs (): any {
+    return this.$refs
+  }
+
   mounted () {
     this.rightMenuSetting()
   }
@@ -84,7 +88,7 @@ export default class IconScreenDefault extends Vue {
     if (!event.ctrlKey && !event.shiftKey && !this.app.renameInfoList[index].isSelect) {
       this.app.click(index)
     }
-    this.$refs.vueSimpleContextMenu.showMenu(event, index)
+    this.refs.vueSimpleContextMenu.showMenu(event, index)
   }
 
   optionClicked (event) {

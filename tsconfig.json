@@ -1,11 +1,19 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
+    // "target": "esnext",
+    // "module": "esnext",
+    "target": "es5",
+    "module": "commonjs",
     "strict": false,
     "noImplicitAny": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
+    "strictBindCallApply": false,
+    "strictPropertyInitialization": false,
+    "noImplicitThis": false,
     "jsx": "preserve",
     "importHelpers": true,
+    "noEmit": true,
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "esModuleInterop": true,
@@ -13,7 +21,8 @@
     "sourceMap": true,
     "baseUrl": ".",
     "types": [
-      "webpack-env"
+      "webpack-env",  
+      "vuetify"
     ],
     "paths": {
       "@/*": [

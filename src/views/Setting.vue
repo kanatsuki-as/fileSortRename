@@ -59,6 +59,10 @@ export default class Setting extends Vue {
     }
   ]
 
+  get refs (): any {
+    return this.$refs
+  }
+
   get listDatas () {
     return proxies.setting.datas
   }
@@ -68,7 +72,7 @@ export default class Setting extends Vue {
   }
 
   handleClick (event, item) {
-    this.$refs.vueSimpleContextMenu.showMenu(event, item)
+    this.refs.vueSimpleContextMenu.showMenu(event, item)
   }
 
   optionClicked (event) {
